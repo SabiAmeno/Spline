@@ -8,19 +8,17 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = PixelFun
+TARGET = mainwindow
 TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        pixelfun.cpp \
-    ucolormap.cpp \
     qgraphics.cpp \
-    spline.cpp
+    spline.cpp \
+    mainwindow.cpp
 
-HEADERS  += pixelfun.h \
-    ucolormap.h \
+HEADERS  += mainwindow.h \
     qgraphics.h \
     spline.h
 
-FORMS    += pixelfun.ui
+FORMS    += mainwindow.ui
