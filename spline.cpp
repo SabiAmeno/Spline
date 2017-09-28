@@ -53,16 +53,13 @@ void SplineABT::genSpline()
 
 void CardinalSpline::Path()
 {
-	float intival[100];
-	for (int i = 0; i < opts.interpolation; i++)
-		intival[i] = (float)i / opts.interpolation;
-
 	if (!points.isEmpty()) {
 		path.swap(QPainterPath());
 		path.moveTo(points[0]);
 		for (int i = 1; i < size() - 2; i++) {
 			for (int j = 0; j < opts.interpolation; j++) {
-				path.lineTo(xy(i, intival[j]));
+				float u = (float)j / opts.interpolation;
+				path.lineTo(xy(i, u));
 			}
 		}
 	}
@@ -106,7 +103,6 @@ QPoint CardinalSpline::xy(int i, float u)
 
 BezierSpline::BezierSpline()
 {
-
 }
 
 BezierSpline::~BezierSpline()
@@ -132,14 +128,14 @@ void BezierSpline::Path()
 	for(int k = 0; k < n;k++)
 		cb[k] = combCoeff(n, k);
 
-    if (!points.isEmpty()) {
+    if (points.size() > 1) {
         path.swap(QPainterPath());
         path.moveTo(points[0]);
         for (int j = 0; j < opts.interpolation; j++) {
 			float u = (float)j / opts.interpolation;
             float x = 0.0, y = 0.0;
             for (int k = 0; k < n; k++) {
-                float bezier = cb[k] * std::powf(u, k) * std::powf(1 - u, n - k);
+                float bezier = cb[k] * std::pow(u, k) * std::pow(1 - u, n - k);
                 x += points[k].x() * bezier;
                 y += points[k].y() * bezier;
             }

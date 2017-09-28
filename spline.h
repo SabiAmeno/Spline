@@ -20,7 +20,7 @@ struct Options
 	SplineType sline_t = Cardinal;
 	bool       real_paint = false;
 
-	int        interpolation = 20;
+	int        interpolation = 200;
 	float      tension = 0;
 };
 
