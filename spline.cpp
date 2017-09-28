@@ -131,17 +131,15 @@ void BezierSpline::Path()
 	QVector<float> cb(n, 0);
 	for(int k = 0; k < n;k++)
 		cb[k] = combCoeff(n, k);
-    float intival[100];
-    for (int i = 0; i < opts.interpolation; i++)
-        intival[i] = (float)i / opts.interpolation;
 
     if (!points.isEmpty()) {
         path.swap(QPainterPath());
         path.moveTo(points[0]);
         for (int j = 0; j < opts.interpolation; j++) {
+			float u = (float)j / opts.interpolation;
             float x = 0.0, y = 0.0;
             for (int k = 0; k < n; k++) {
-                float bezier = cb[k] * std::powf(intival[j], k) * std::powf(1 - intival[j], n - k);
+                float bezier = cb[k] * std::powf(u, k) * std::powf(1 - u, n - k);
                 x += points[k].x() * bezier;
                 y += points[k].y() * bezier;
             }
