@@ -6,16 +6,17 @@
 #include <QMatrix4x4>
 #include <QPainter>
 
-//样条类型
-typedef enum
-{
-	//Cardinal样条
-	Cardinal
-} SplineType;
-
 //存放样条曲线的参数
 struct Options
 {
+	//样条类型
+	typedef enum
+	{
+		//Cardinal样条
+		Cardinal,
+		Bezier
+	} SplineType;
+
 	SplineType sline_t = Cardinal;
 	bool       real_paint = false;
 
@@ -40,17 +41,18 @@ public:
 	void clear();
 
 	//生成样条曲线
-	void genSpline();
+	virtual void genSpline();
 
 protected:
 	SplineABT() {}
+	//添加点后执行其它代码
+	virtual void _add(const QPoint& p) = 0;
 	//生成曲线具体方法
 	virtual void Path() = 0;
 
 	QPainterPath path;
 	Options      opts;
 	QVector<QPoint> points;
-private:
     bool finished = false;
 };
 
@@ -60,9 +62,10 @@ public:
 	CardinalSpline() {}
 
 	virtual void draw(QPaintDevice* pd, const Options& opt);
+	virtual void genSpline();
 protected:
 	virtual void Path();
-
+	virtual void _add(const QPoint& p);
 private:
 	/**
 	* @param i 第i个点
@@ -71,5 +74,30 @@ private:
 	*/
 	QPoint xy(int i, float u);
 };
+
+class BezierSpline : public SplineABT
+{
+public:
+	BezierSpline();
+    virtual ~BezierSpline();
+
+    virtual void draw(QPaintDevice* pd, const Options& opt);
+protected:
+    virtual void Path();
+	virtual void _add(const QPoint& p);
+private:
+    float combCoeff(int n, int k);
+};
+
+class SplineBuilder
+{
+public:
+	~SplineBuilder() {}
+
+	static SplineABT* Build(Options::SplineType t);
+private:
+	SplineBuilder() {}
+};
+
 
 #endif // SPLINE_H

@@ -45,7 +45,12 @@
         <widget class="QComboBox" name="samp_box">
          <item>
           <property name="text">
-           <string>Cardinal样条</string>
+           <string>Cardinal样条曲线</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Bezier样条曲线</string>
           </property>
          </item>
         </widget>

@@ -48,6 +48,7 @@ private:
     QPoint last_pos;
 
     SplineABT* spline;
+	Options::SplineType s_type;
 };
 
 #endif // QGRAPHICS_H

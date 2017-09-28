@@ -58,7 +58,8 @@ void MainWindow::realTimeRender(int s)
 
 void MainWindow::splineTypeChanged(int index)
 {
-	ui->u_cv->options.sline_t = (SplineType)index;
+	ui->u_cv->repaint();
+	ui->u_cv->options.sline_t = (Options::SplineType)index;
 	ui->u_cv->genSpline();
 	ui->u_cv->update();
 }

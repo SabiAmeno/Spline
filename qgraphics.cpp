@@ -2,7 +2,7 @@
 #include <QMouseEvent>
 #include "qgraphics.h"
 
-QGraphics::QGraphics(QWidget *parent) : QWidget(parent)
+QGraphics::QGraphics(QWidget *parent) : QWidget(parent), s_type(Options::Cardinal)
 {
     QPalette p;
     p.setBrush(this->backgroundRole(),QBrush(QColor(255,255,255)));
@@ -10,11 +10,17 @@ QGraphics::QGraphics(QWidget *parent) : QWidget(parent)
     this->setAutoFillBackground(true);
 
 	spline = new CardinalSpline();
+    //spline = new BezierSpline();
     setMouseTracking(true);
 }
 
 void QGraphics::genSpline(bool fi)
 {
+	if (options.sline_t != s_type) {
+		delete spline; spline = nullptr;
+		spline = SplineBuilder::Build(options.sline_t);
+		s_type = options.sline_t;
+	}
 	if (fi)
 		spline->finish();
 	else

@@ -1,23 +1,13 @@
 #include "spline.h"
 
+
 void SplineABT::add(const QPoint &p)
 {
 	if (finished)
 		return;
-
-	if (opts.real_paint && points.size() > 2) {
-		points.erase(points.end() - 1);
-	}
-
 	points.push_back(p);
 
-	if (opts.real_paint) {
-		bool empty = points.isEmpty();
-		if (empty)
-			points.push_back(p);
-		points.push_back(points.back());
-		Path();
-	}
+	_add(p);
 }
 
 void SplineABT::finish()
@@ -58,10 +48,6 @@ void SplineABT::clear()
 
 void SplineABT::genSpline()
 {
-	if (!points.isEmpty() && !finished && !opts.real_paint) {
-		points.push_front(points.front());
-		points.push_back(points.back());
-	}
 	Path();
 }
 
@@ -82,6 +68,28 @@ void CardinalSpline::Path()
 	}
 }
 
+void CardinalSpline::_add(const QPoint & p)
+{
+	if (opts.real_paint) {
+		if(points.size() > 2)
+			points.erase(points.end() - 2);
+		if (points.size() == 1)
+			points.push_back(p);
+		points.push_back(points.back());
+		Path();
+	}
+}
+
+void CardinalSpline::genSpline()
+{
+	if (!points.isEmpty() && !finished && !opts.real_paint) {
+		points.push_front(points.front());
+		points.push_back(points.back());
+	}
+
+	SplineABT::genSpline();
+}
+
 QPoint CardinalSpline::xy(int i, float u)
 {
 	float s = (1 - opts.tension) / 2;
@@ -95,3 +103,77 @@ QPoint CardinalSpline::xy(int i, float u)
 	return QPoint(x, y);
 }
 
+
+BezierSpline::BezierSpline()
+{
+
+}
+
+BezierSpline::~BezierSpline()
+{
+}
+
+void BezierSpline::draw(QPaintDevice *pd, const Options &opt)
+{
+    SplineABT::draw(pd, opt);
+
+    QPainter pir(pd);
+    pir.setRenderHint(QPainter::Antialiasing);
+    for (int i = 0; i < size(); ++i)
+        pir.drawEllipse((*this)[i], 2, 2);
+
+    pir.drawPath(path);
+}
+
+void BezierSpline::Path()
+{
+	int n = (int)points.size();
+	QVector<float> cb(n, 0);
+	for(int k = 0; k < n;k++)
+		cb[k] = combCoeff(n, k);
+    float intival[100];
+    for (int i = 0; i < opts.interpolation; i++)
+        intival[i] = (float)i / opts.interpolation;
+
+    if (!points.isEmpty()) {
+        path.swap(QPainterPath());
+        path.moveTo(points[0]);
+        for (int j = 0; j < opts.interpolation; j++) {
+            float x = 0.0, y = 0.0;
+            for (int k = 0; k < n; k++) {
+                float bezier = cb[k] * std::powf(intival[j], k) * std::powf(1 - intival[j], n - k);
+                x += points[k].x() * bezier;
+                y += points[k].y() * bezier;
+            }
+            path.lineTo(x, y);
+        }
+    }
+}
+
+void BezierSpline::_add(const QPoint &p)
+{
+	if (opts.real_paint)
+		Path();
+}
+
+float BezierSpline::combCoeff(int n, int k)
+{
+	if (k == 0) return 1;
+
+	return ((n - k + 1) / (float)k) * combCoeff(n, k - 1);
+}
+
+
+////////////////////
+SplineABT* SplineBuilder::Build(Options::SplineType t)
+{
+	switch (t)
+	{
+	case Options::Cardinal:
+		return new CardinalSpline();
+	case Options::Bezier:
+		return new BezierSpline();
+	}
+
+	return nullptr;
+}
