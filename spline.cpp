@@ -33,10 +33,26 @@ int SplineABT::size()
 	return points.size();
 }
 
-const QPoint &SplineABT::operator[](int index)
+const QPoint & SplineABT::at(int index)
 {
 	Q_ASSERT(index < points.size());
 	return points.at(index);
+}
+
+int SplineABT::at(const QPoint &p)
+{
+	for (int i = 0; i < size(); ++i) {
+		auto scope = QRect((*this)[i] - QPoint(4, 4), QSize(8, 8));
+		if (scope.contains(p))
+			return i;
+	}
+	return -1;
+}
+
+QPoint &SplineABT::operator[](int index)
+{
+	Q_ASSERT(index < points.size());
+	return points[index];
 }
 
 void SplineABT::clear()
@@ -53,13 +69,13 @@ void SplineABT::genSpline()
 
 void CardinalSpline::Path()
 {
-	if (!points.isEmpty()) {
+	if (size() > 1) {
 		path.swap(QPainterPath());
-		path.moveTo(points[0]);
-		for (int i = 1; i < size() - 2; i++) {
+		path.moveTo(points[1]);
+		for (int i = 2; i < size() - 1; i++) {
 			for (int j = 0; j < opts.interpolation; j++) {
 				float u = (float)j / opts.interpolation;
-				path.lineTo(xy(i, u));
+				path.lineTo(xy(i - 1, u));
 			}
 		}
 	}
@@ -123,24 +139,28 @@ void BezierSpline::draw(QPaintDevice *pd, const Options &opt)
 
 void BezierSpline::Path()
 {
-	int n = (int)points.size();
-	QVector<float> cb(n, 0);
-	for(int k = 0; k < n;k++)
-		cb[k] = combCoeff(n, k);
+	int pt_size = (int)points.size();
+	if (pt_size == 0) return;
+
+	int n = pt_size - 1;
+	auto cb = computeCoeff(n);
 
     if (points.size() > 1) {
         path.swap(QPainterPath());
         path.moveTo(points[0]);
-        for (int j = 0; j < opts.interpolation; j++) {
+		QVector<QPointF> tp;
+        for (int j = 0; j <= opts.interpolation; j++) {
 			float u = (float)j / opts.interpolation;
             float x = 0.0, y = 0.0;
-            for (int k = 0; k < n; k++) {
+            for (int k = 0; k < pt_size; k++) {
                 float bezier = cb[k] * std::pow(u, k) * std::pow(1 - u, n - k);
                 x += points[k].x() * bezier;
                 y += points[k].y() * bezier;
             }
             path.lineTo(x, y);
+			tp.push_back(QPointF(x, y));
         }
+		tp.size();
     }
 }
 
@@ -148,6 +168,15 @@ void BezierSpline::_add(const QPoint &p)
 {
 	if (opts.real_paint)
 		Path();
+}
+
+QVector<float> BezierSpline::computeCoeff(int n)
+{
+	QVector<float> cb(n + 1, 0);
+	for (int k = 0; k <= n; k++)
+		cb[k] = combCoeff(n, k);
+
+	return cb;
 }
 
 float BezierSpline::combCoeff(int n, int k)

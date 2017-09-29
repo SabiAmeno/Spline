@@ -17,11 +17,26 @@ struct Options
 		Bezier
 	} SplineType;
 
-	SplineType sline_t = Cardinal;
-	bool       real_paint = false;
+	typedef enum {
+		NoOp,
+		//添加控制点模式
+		AddCtrlPos,
+		//调整控制点位置模式
+		AdjustCtrlPos
+	}OpMode;
 
-	int        interpolation = 200;
+	//绘图模式控制
+	bool       real_paint = false;
+	OpMode     add_cp_mode = AddCtrlPos;
+	SplineType sline_t = Cardinal;
+	
+	//样条参数
+	int        interpolation = 1000;
 	float      tension = 0;
+
+	//绘图参数
+	QColor     endp_color = Qt::black;
+	QColor     line_color = Qt::black;
 };
 
 class SplineABT
@@ -31,11 +46,14 @@ public:
     void add(const QPoint& p);
 	//完成曲线绘制
     void finish();
+	bool isFinished() { return finished; }
 
 	//绘制样条曲线
-	virtual void draw(QPaintDevice* pd, const Options& opt) { opts = opt; }
+	virtual void draw(QPaintDevice*, const Options& opt) { opts = opt; }
     int size();
-    const QPoint& operator[](int index);
+	const QPoint& at(int index);
+	int at(const QPoint& p);
+	QPoint& operator[](int index);
 
 	//复位
 	void clear();
@@ -86,6 +104,7 @@ protected:
     virtual void Path();
 	virtual void _add(const QPoint& p);
 private:
+	QVector<float> computeCoeff(int n);
     float combCoeff(int n, int k);
 };
 

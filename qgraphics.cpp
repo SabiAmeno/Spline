@@ -42,20 +42,34 @@ void QGraphics::paintEvent(QPaintEvent *event)
 
 void QGraphics::mousePressEvent(QMouseEvent *event)
 {
-    had_press = true;
-    last_pos = event->pos();
-    setCursor(Qt::ClosedHandCursor);
+	had_press = true;
+	setCursor(Qt::ClosedHandCursor);
+	last_pos = event->pos();
 
-	spline->add(last_pos);
+	if(options.add_cp_mode == Options::AdjustCtrlPos)
+		adj_p_idx = spline->at(last_pos);
     update();
+}
+
+void QGraphics::mouseDoubleClickEvent(QMouseEvent * event)
+{
+	if (options.add_cp_mode == Options::AddCtrlPos) {
+		setCursor(Qt::CrossCursor);
+		spline->add(event->pos());
+	}
+	update();
 }
 
 void QGraphics::mouseMoveEvent(QMouseEvent *event)
 {
     auto pos = event->pos();
     if(had_press) {
-        clip_rect.offset(pos - last_pos);
-        if(never_move) never_move = false;
+		if (adj_p_idx != -1 && options.add_cp_mode == Options::AdjustCtrlPos) {
+			(*spline)[adj_p_idx] = pos;
+			//是否完成绘制，若完成，则更新整个图，否则只更新点
+			if (spline->isFinished())
+				spline->genSpline();
+		}
     }
     last_pos = pos;
 
@@ -65,6 +79,7 @@ void QGraphics::mouseMoveEvent(QMouseEvent *event)
 void QGraphics::mouseReleaseEvent(QMouseEvent *event)
 {
     had_press = false;
+	adj_p_idx = -1;
     setCursor(Qt::ArrowCursor);
 }
 

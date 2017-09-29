@@ -4,23 +4,6 @@
 #include <QWidget>
 #include "spline.h"
 
-class ClipRect {
-public:
-    ClipRect() {}
-    ClipRect(const QRect& r) : crect(r){}
-
-    void offset(const QPoint& pos)
-    {
-        crect.setTopLeft(crect.topLeft() + pos);
-        crect.setWidth(128);
-        crect.setHeight(100);
-    }
-
-public:
-    QRect crect = QRect(60, 100, 128, 100);
-};
-
-
 class QGraphics : public QWidget
 {
     Q_OBJECT
@@ -34,6 +17,7 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
+	void mouseDoubleClickEvent(QMouseEvent *event);
     void wheelEvent(QWheelEvent *event);
 signals:
 
@@ -41,14 +25,13 @@ public slots:
 public:
 	Options options;
 private:
-    ClipRect clip_rect;
-    bool never_move = true;
     bool had_press = false;
 
     QPoint last_pos;
 
     SplineABT* spline;
 	Options::SplineType s_type;
+	int adj_p_idx = -1;
 };
 
 #endif // QGRAPHICS_H

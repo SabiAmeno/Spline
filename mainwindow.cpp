@@ -64,14 +64,18 @@ void MainWindow::splineTypeChanged(int index)
 	ui->u_cv->update();
 }
 
+void MainWindow::addCtrlPoint(int s)
+{
+	ui->u_cv->options.add_cp_mode = !bool(s) ? Options::AddCtrlPos : Options::AdjustCtrlPos;
+}
+
 void MainWindow::init()
 {
-	ui->slider_1->setValue(0);
-	ui->slider_2->setValue(20);
 	connect(ui->gen_line, &QPushButton::clicked, this, &MainWindow::genSpline);
 	connect(ui->repaint_btn, &QPushButton::clicked, this, &MainWindow::repaintSpline);
 	connect(ui->slider_1, SIGNAL(valueChanged(double)), this, SLOT(smoothChanged(double)));
 	connect(ui->slider_2, &QSlider::valueChanged, this, &MainWindow::interpolateChanged);
 	connect(ui->real_time, &QCheckBox::stateChanged, this, &MainWindow::realTimeRender);
+	connect(ui->add_ctrl_p, &QCheckBox::stateChanged, this, &MainWindow::addCtrlPoint);
 	connect(ui->samp_box, SIGNAL(currentIndexChanged(int)), this, SLOT(splineTypeChanged(int)));
 }

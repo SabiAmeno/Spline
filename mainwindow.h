@@ -22,6 +22,7 @@ public slots:
 	void smoothChanged(double v);
 	void realTimeRender(int);
 	void splineTypeChanged(int);
+	void addCtrlPoint(int);
 private:
     void init();
 private:
